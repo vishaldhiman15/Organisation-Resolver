@@ -197,10 +197,13 @@ export default function DashboardLayout({ children }) {
               if (notifData.success) setUnreadNotifications(notifData.unreadCount);
             });
         } else {
-          router.push('/');
+          // Token is invalid, clear it so middleware doesn't redirect back to dashboard
+          fetch('/api/auth/logout', { method: 'POST' }).finally(() => router.push('/'));
         }
       })
-      .catch(() => router.push('/'))
+      .catch(() => {
+        fetch('/api/auth/logout', { method: 'POST' }).finally(() => router.push('/'));
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
