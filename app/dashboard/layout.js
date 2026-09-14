@@ -227,7 +227,7 @@ export default function DashboardLayout({ children }) {
       <div className="mobile-topbar">
         <div>
           <h2 className="text-gradient" style={{ margin: 0, fontSize: '1.25rem' }}>Helpbuddy</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', margin: 0 }}>{user.organizationId.name}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', margin: 0 }}>{user?.organizationId?.name || 'Organization'}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button className="notification-bell" onClick={() => router.push('/dashboard/notifications')}>
@@ -246,7 +246,7 @@ export default function DashboardLayout({ children }) {
           <div>
             <h2 className="text-gradient" style={{ margin: 0 }}>Helpbuddy</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-              {user.organizationId.name}
+              {user?.organizationId?.name || 'Organization'}
             </p>
           </div>
           <button className="mobile-close-btn" onClick={() => setMobileMenuOpen(false)}>✕</button>
@@ -364,11 +364,11 @@ export default function DashboardLayout({ children }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--rounded-full)', backgroundColor: 'var(--primary-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
-              {user.name.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: '600', margin: 0, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</p>
-              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.8rem', textTransform: 'capitalize' }}>{user.specialization || user.role}</p>
+              <p style={{ fontWeight: '600', margin: 0, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'User'}</p>
+              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.8rem', textTransform: 'capitalize' }}>{user?.specialization || user?.role || 'Member'}</p>
             </div>
           </div>
           <button
