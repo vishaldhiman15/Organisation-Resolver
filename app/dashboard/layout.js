@@ -179,8 +179,10 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -202,6 +204,11 @@ export default function DashboardLayout({ children }) {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   if (loading) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
   }
@@ -219,19 +226,27 @@ export default function DashboardLayout({ children }) {
           <h2 className="text-gradient" style={{ margin: 0, fontSize: '1.25rem' }}>Helpbuddy</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', margin: 0 }}>{user.organizationId.name}</p>
         </div>
-        <button className="notification-bell" onClick={() => router.push('/dashboard/notifications')}>
-          🔔
-          {unreadNotifications > 0 && <span className="notification-badge">{unreadNotifications}</span>}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button className="notification-bell" onClick={() => router.push('/dashboard/notifications')}>
+            🔔
+            {unreadNotifications > 0 && <span className="notification-badge">{unreadNotifications}</span>}
+          </button>
+          <button className="hamburger-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            ☰
+          </button>
+        </div>
       </div>
 
-      {/* Desktop Sidebar */}
-      <aside className="glass-panel dashboard-sidebar" style={{ margin: '1rem' }}>
-        <div style={{ paddingBottom: '2rem', borderBottom: '1px solid var(--glass-border)' }}>
-          <h2 className="text-gradient" style={{ margin: 0 }}>Helpbuddy</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            {user.organizationId.name}
-          </p>
+      {/* Desktop Sidebar / Mobile Slide-out */}
+      <aside className={`glass-panel dashboard-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+        <div className="sidebar-header" style={{ paddingBottom: '2rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 className="text-gradient" style={{ margin: 0 }}>Helpbuddy</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {user.organizationId.name}
+            </p>
+          </div>
+          <button className="mobile-close-btn" onClick={() => setMobileMenuOpen(false)}>✕</button>
         </div>
 
         <nav style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -366,61 +381,17 @@ export default function DashboardLayout({ children }) {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="mobile-bottom-nav">
-        <div 
-          className={`mobile-nav-item ${pathname === '/dashboard' ? 'active' : ''}`}
-          onClick={() => router.push('/dashboard')}
-        >
-          <span className="mobile-nav-icon">🌐</span>
-          <span>Feed</span>
-        </div>
-        {user.role === 'employee' && (
-          <div 
-            className={`mobile-nav-item ${pathname?.includes('/tasks') ? 'active' : ''}`}
-            onClick={() => router.push('/dashboard/tasks')}
-          >
-            <span className="mobile-nav-icon">📝</span>
-            <span>Tasks</span>
-          </div>
-        )}
-        <div 
-          className={`mobile-nav-item ${pathname?.includes('/attendance') ? 'active' : ''}`}
-          onClick={() => router.push('/dashboard/attendance')}
-        >
-          <span className="mobile-nav-icon">📅</span>
-          <span>Attend</span>
-        </div>
-        {user.role === 'head' && (
-          <div 
-            className={`mobile-nav-item ${pathname?.includes('/analytics') ? 'active' : ''}`}
-            onClick={() => router.push('/dashboard/analytics')}
-          >
-            <span className="mobile-nav-icon">📊</span>
-            <span>Stats</span>
-          </div>
-        )}
-        <div 
-          className={`mobile-nav-item ${pathname?.includes('/settings') ? 'active' : ''}`}
-          onClick={() => {
-            if(user.role === 'head') router.push('/dashboard/settings');
-            else {
-              // Employee settings/logout
-              fetch('/api/auth/logout', { method: 'POST' }).then(() => router.push('/'));
-            }
-          }}
-        >
-          <span className="mobile-nav-icon">{user.role === 'head' ? '⚙️' : '🚪'}</span>
-          <span>{user.role === 'head' ? 'Settings' : 'Logout'}</span>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <main className="dashboard-main">
         <div className="glass-panel" style={{ height: '100%', padding: '2rem', overflowY: 'auto' }}>
           {children}
         </div>
       </main>
+
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
     </div>
   );
 }

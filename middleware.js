@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 
 export function middleware(request) {
-  // Check if the user is requesting a protected route
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    // Check for the authentication token cookie
-    const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get('token')?.value;
+  const { pathname } = request.nextUrl;
 
+  // If user is logged in and on the login/register page, redirect to dashboard
+  if ((pathname === '/' || pathname === '/register') && token) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Check if the user is requesting a protected route
+  if (pathname.startsWith('/dashboard')) {
     if (!token) {
       // If no token exists, redirect to the login page
       return NextResponse.redirect(new URL('/', request.url));
@@ -18,5 +23,5 @@ export function middleware(request) {
 
 // Specify the paths that the middleware should run on
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/', '/register', '/dashboard/:path*'],
 };
