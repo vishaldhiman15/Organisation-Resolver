@@ -182,6 +182,8 @@ export default function DashboardLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     fetch('/api/auth/me')
       .then(res => res.json())
@@ -196,6 +198,11 @@ export default function DashboardLayout({ children }) {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   if (loading) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
   }
@@ -203,20 +210,26 @@ export default function DashboardLayout({ children }) {
   if (!user) return null;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+    <div className="dashboard-container">
 
       {showInviteModal && <InviteModal onClose={() => setShowInviteModal(false)} />}
 
       {/* Sidebar */}
-      <aside className="glass-panel" style={{ width: '280px', margin: '1rem', padding: '2rem 1rem', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ paddingBottom: '2rem', borderBottom: '1px solid var(--glass-border)' }}>
-          <h2 className="text-gradient" style={{ margin: 0 }}>Helpbuddy</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            {user.organizationId.name}
-          </p>
+      <aside className={`glass-panel dashboard-sidebar ${mobileMenuOpen ? 'mobile-open' : 'mobile-closed'}`} style={{ margin: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: mobileMenuOpen ? '1.5rem' : '0', borderBottom: mobileMenuOpen ? '1px solid var(--glass-border)' : 'none' }}>
+          <div>
+            <h2 className="text-gradient" style={{ margin: 0 }}>Helpbuddy</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, marginTop: '0.25rem' }}>
+              {user.organizationId.name}
+            </p>
+          </div>
+          <button className="mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
         </div>
 
-        <nav style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <nav style={{ marginTop: '2rem', display: mobileMenuOpen ? 'flex' : 'none', flexDirection: 'column', gap: '0.5rem' }} className="md-flex-nav">
+          <style>{`@media (min-width: 768px) { .md-flex-nav { display: flex !important; } }`}</style>
           <button
             onClick={() => router.push('/dashboard')}
             className="btn btn-secondary"
@@ -316,7 +329,8 @@ export default function DashboardLayout({ children }) {
           )}
         </nav>
 
-        <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '2rem', display: mobileMenuOpen ? 'flex' : 'none', flexDirection: 'column', gap: '1rem' }} className="md-flex-footer">
+          <style>{`@media (min-width: 768px) { .md-flex-footer { display: flex !important; margin-top: auto; border-top: 1px solid var(--glass-border); } }`}</style>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--rounded-full)', backgroundColor: 'var(--primary-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
               {user.name.charAt(0).toUpperCase()}
@@ -340,7 +354,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '1rem' }}>
+      <main className="dashboard-main">
         <div className="glass-panel" style={{ height: '100%', padding: '2rem', overflowY: 'auto' }}>
           {children}
         </div>
