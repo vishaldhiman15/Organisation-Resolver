@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Task from '@/models/Task';
 import User from '@/models/User';
+import Notification from '@/models/Notification';
 
 export async function GET(request) {
   try {
@@ -16,9 +17,13 @@ export async function GET(request) {
     
     let query = { organizationId: user.organizationId };
     
-    // If employee, only get their assigned tasks
+    // If employee, only get their assigned tasks OR pending tasks matching their specialization
     if (user.role === 'employee') {
-      query.assigneeId = user.id;
+      const dbUser = await User.findById(user.id);
+      query.$or = [
+        { assigneeId: user.id },
+        { status: 'pending', category: dbUser.specialization || 'General' }
+      ];
     }
 
     const tasks = await Task.find(query)
@@ -43,7 +48,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, description, assigneeId } = await request.json();
+    const { title, description, assigneeId, category } = await request.json();
 
     if (!title || !description) {
       return NextResponse.json(
@@ -59,12 +64,20 @@ export async function POST(request) {
       description,
       organizationId: user.organizationId,
       assigneeId: assigneeId || null,
+      category: category || 'General',
       status: assigneeId ? 'assigned' : 'pending'
     });
 
-    // If assigned immediately, update user's workStatus
+    // If assigned immediately, update user's workStatus and send notification
     if (assigneeId) {
       await User.findByIdAndUpdate(assigneeId, { workStatus: 'working' });
+      await Notification.create({
+        userId: assigneeId,
+        organizationId: user.organizationId,
+        title: 'New Task Assigned',
+        message: `You have been assigned a new task: ${title}`,
+        link: '/dashboard/tasks'
+      });
     }
 
     return NextResponse.json({ task }, { status: 201 });

@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'General',
   },
+  specialization: {
+    type: String,
+    default: 'General',
+  },
   workStatus: {
     type: String,
     enum: ['free', 'working', 'offline'],

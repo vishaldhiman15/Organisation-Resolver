@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Issue from '@/models/Issue';
+import Notification from '@/models/Notification';
 import { verifyToken } from '@/lib/auth';
 
 function getUser(req) {
@@ -40,6 +41,15 @@ export async function PATCH(req, { params }) {
     issue.status = status;
     issue.updatedAt = new Date();
     await issue.save();
+
+    // Notify issue author
+    await Notification.create({
+      userId: issue.authorId,
+      organizationId: user.organizationId,
+      title: 'Issue Status Updated',
+      message: `Your issue "${issue.title}" is now ${status}.`,
+      link: `/dashboard/issue/${issue._id}`
+    });
 
     return NextResponse.json({ success: true, data: issue });
   } catch (error) {

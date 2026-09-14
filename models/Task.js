@@ -20,6 +20,10 @@ const TaskSchema = new mongoose.Schema({
     ref: 'User',
     required: false,
   },
+  category: {
+    type: String,
+    default: 'General',
+  },
   status: {
     type: String,
     enum: ['pending', 'assigned', 'completed'],

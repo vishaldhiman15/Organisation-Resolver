@@ -7,7 +7,7 @@ export default function BranchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState('All');
-  const [newTask, setNewTask] = useState({ title: '', description: '', assigneeId: '' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', assigneeId: '', category: 'General' });
   const [showTaskModal, setShowTaskModal] = useState(false);
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export default function BranchesPage() {
       if (!res.ok) throw new Error('Failed to create task');
       
       setShowTaskModal(false);
-      setNewTask({ title: '', description: '', assigneeId: '' });
+      setNewTask({ title: '', description: '', assigneeId: '', category: 'General' });
       fetchEmployees(); // Refresh to update workStatus
     } catch (err) {
       alert(err.message);
@@ -94,7 +94,8 @@ export default function BranchesPage() {
             </div>
             
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{emp.email}</p>
-            <p style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Branch: <span style={{ color: 'var(--secondary-accent)' }}>{emp.branch || 'General'}</span></p>
+            <p style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Branch: <span style={{ color: 'var(--secondary-accent)' }}>{emp.branch || 'General'}</span></p>
+            <p style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '1.5rem' }}>Role: <span style={{ color: 'var(--secondary-accent)' }}>{emp.specialization || 'General'}</span></p>
             
             <div className="mt-auto flex space-x-3">
               <button
@@ -106,7 +107,7 @@ export default function BranchesPage() {
               </button>
               <button
                 onClick={() => {
-                  setNewTask({ ...newTask, assigneeId: emp._id });
+                  setNewTask({ ...newTask, assigneeId: emp._id, category: emp.specialization || 'General' });
                   setShowTaskModal(true);
                 }}
                 className="btn btn-primary flex-1"
@@ -144,6 +145,17 @@ export default function BranchesPage() {
                   className="input-field"
                   placeholder="e.g. Fix lights in room 204"
                 />
+              </div>
+              <div>
+                <label className="input-label">Category</label>
+                <select className="input-field" value={newTask.category} onChange={e => setNewTask({...newTask, category: e.target.value})}>
+                  <option value="General">General</option>
+                  <option value="Frontend Developer">Frontend Developer</option>
+                  <option value="Backend Developer">Backend Developer</option>
+                  <option value="Electrician">Electrician</option>
+                  <option value="Plumber">Plumber</option>
+                  <option value="IT Support">IT Support</option>
+                </select>
               </div>
               <div>
                 <label className="input-label">Description</label>

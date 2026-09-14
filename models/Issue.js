@@ -25,6 +25,10 @@ const IssueSchema = new mongoose.Schema({
     enum: ['private', 'public'],
     default: 'private',
   },
+  category: {
+    type: String,
+    default: 'General',
+  },
   status: {
     type: String,
     enum: ['open', 'in-progress', 'resolved'],
